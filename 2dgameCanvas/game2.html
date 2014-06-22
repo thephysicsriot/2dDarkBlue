@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<style>
+
+.background { background: #34a6fb;
+table-layout: fixed;
+border-spacing: 0; }
+.background td {padding: 0;         }
+.lava          {background: darkred;}
+.wall          {background: green;  }
+.rock          {background: saddlebrown;    }
+.letter        {background: black;  }
+
+.actor {position: absolute;  }
+.coin {background: #f1e559;  }
+.player {background: #404040;}
+
+.lost .player {
+background: #a04040;
+}
+.won .player {
+    box-shadow: -4px -7px 8px white, 4px -7px 8px white;
+}
+
+.game {
+    overflow: hidden;
+    max-width: 600px;
+    max-height: 450px;
+    position: relative;
+}
+
+
+</style>
+
+<script>
+
+
+function Level(plan) {
+    this.width = plan[0].length;
+    this.height = plan.length;
+    this.grid = [];
+    this.actors = [];
+
+    for (var y = 0; y < this.height; y++) {
+        var line = plan[y], gridLine = [];
+        for (var x = 0; x <this.width; x++) {
+            var ch = line[x], fieldType = null;
+            var Actor = actorChars[ch];
+            if (Actor)
+                this.actors.push(new Actor(new Vector(x,y), ch));
+            else if (ch == "x")
+                fieldType = "wall";
+            else if (ch == "r")
+                fieldType = "rock";
+            else if (ch == "!")
+                fieldType = "lava";
+            gridLine.push(fieldType);
+        }
+        this.grid.push(gridLine);
+    }
+
+    this.player = this.actors.filter(function(actor) {
+        return actor.type == "player";
+    })[0];
+    this.status = this.finishDelay = null;
+
+}
+
+Level.prototype.isFinished = function() {
+    return this.status != null && this.finishDelay < 0;
+};
+
+Level.prototype.obstacleAt = function(pos, size) {
+    var xStart = Math.floor(pos.x);
+    var xEnd = Math.ceil(pos.x + size.x);
+    var yStart = Math.floor(pos.y);
+    var yEnd = Math.ceil(pos.y + size.y);
+
+    if (xStart < 0 || xEnd > this.width || yStart < 0)
+        return "wall";
+    if (yEnd > this.height)
+        return "lava"
+    for (var y = yStart; y < yEnd; y++) {
+        for (var x = xStart; x < xEnd; x++) {
+            var fieldType = this.grid[y][x];
+            if (fieldType) return fieldType;
+        }
+    }
+};
+
+Level.prototype.actorAt = function(actor) {
+    for (var i = 0; i < this.actors.length; i++) {
+        var other = this.actors[i];
+        if (other != actor &&
+                actor.pos.x + actor.size.x > other.pos.x &&
+                actor.pos.x < other.pos.x + other.size.x &&
+                actor.pos.y + actor.size.y > other.pos.x &&
+                actor.pos.y < other.pos.y + other.size.y)
+            return other;
+    }
+};
+
+var maxStep = 0.05;
+
+Level.prototype.animate = function(step, keys) {
+    if (this.status != null)
+        this.finishDelay -= step;
+
+    while (step > 0) {
+        var thisStep = Math.min(step, maxStep);
+        for (var i = 0; i < this.actors.length; i++)
+            this.actors[i].act(thisStep, this keys);
+        step -= thisStep;
+    }
+};
+
+Level.prototype.playerTouched = function(type, actor) {
+    if (type == "lava" && this.status == null) {
+
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
